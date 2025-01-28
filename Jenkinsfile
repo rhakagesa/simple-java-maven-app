@@ -16,7 +16,7 @@ node {
         }
         stage('Deploy'){
             echo 'Deployment Stage'
-            sshagent(['deploy-ec2']) {
+            sshagent(credentials:['deploy-ec2']) {
                 
                 sh '''
                     echo "Entering EC2"
