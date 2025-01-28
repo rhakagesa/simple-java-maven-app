@@ -41,6 +41,7 @@ EOF
 EOF
                 '''
             }
+            echo 'JAR file removed'
         }
         
     }
