@@ -1,38 +1,34 @@
 node {
     checkout scm
 
-    def sshAuthSock = sh(script: 'echo $SSH_AUTH_SOCK', returnStdout: true).trim()
-
-    docker.image('maven:3.9.2').inside("-u root -v ${sshAuthSock}:${sshAuthSock} -e SSH_AUTH_SOCK=${sshAuthSock}") {
+    docker.image('maven:3.9.2').inside('-u root') {
         stage('Build') {
             echo 'Build'
             sh 'mvn -B -DskipTests clean package'
         }
         stage('Test') {
             echo 'Test'
-            sh 'mvn test'            
+            sh 'mvn test'
         }
-        stage('Manual Approval'){
+        stage('Manual Approval') {
             echo 'Manual Approval'
-            input message: "melanjutkan eksekusi pipeline ke tahap Deploy? (Klik Proceed untuk melanjutkan)"
+            input message: "Melanjutkan eksekusi pipeline ke tahap Deploy? (Klik Proceed untuk melanjutkan)"
         }
-        stage('Deploy'){
+        stage('Deploy') {
             echo 'Deployment Stage'
-            sshagent(credentials: ['deploy-ec2']) {
+            withCredentials([file(credentialsId: 'deploy-ec2', variable: 'SSH_PRIVATE_KEY')]) {
                 sh '''
                     echo "Entering EC2"
-                    ssh -o StrictHostKeyChecking=no ubuntu@ec2-13-250-119-151.ap-southeast-1.compute.amazonaws.com << EOF
-                    
-                    echo "Copy jar file to EC2"
-                    scp -o StrictHostKeyChecking=no target/my-app-1.0-SNAPSHOT.jar ubuntu@ec2-13-250-119-151.ap-southeast-1.compute.amazonaws.com:/home/ubuntu
+                    scp -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY target/my-app-1.0-SNAPSHOT.jar ubuntu@ec2-13-250-119-151.ap-southeast-1.compute.amazonaws.com:/home/ubuntu
                     
                     echo "Run jar file on EC2"
-                    java -jar target/my-app-1.0-SNAPSHOT.jar
+                    ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ubuntu@ec2-13-250-119-151.ap-southeast-1.compute.amazonaws.com << EOF
+                        java -jar /home/ubuntu/my-app-1.0-SNAPSHOT.jar
 EOF
-                '''                
+                '''
             }
-            sleep(60)
-            echo 'Deployment Success'
         }
+        sleep(60)
+        echo 'Deployment Success'
     }
 }
