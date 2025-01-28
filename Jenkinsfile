@@ -16,8 +16,7 @@ node {
         }
         stage('Deploy'){
             echo 'Deployment Stage'
-            sshagent(credentials:['deploy-ec2']) {
-                
+            sshagent(credentials: ['deploy-ec2']) {
                 sh '''
                     echo "Entering EC2"
                     ssh -o StrictHostKeyChecking=no ubuntu@ec2-13-250-119-151.ap-southeast-1.compute.amazonaws.com << EOF
@@ -29,7 +28,6 @@ node {
                     java -jar target/my-app-1.0-SNAPSHOT.jar
 EOF
                 '''                
-            
             }
             sleep(60)
             echo 'Deployment Success'
