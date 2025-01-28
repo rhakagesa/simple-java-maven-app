@@ -10,5 +10,16 @@ node {
             echo 'Test'
             sh 'mvn test'            
         }
+        stage('Manual Approval'){
+            echo 'Manual Approval'
+            input message: "melanjutkan eksekusi pipeline ke tahap Deploy? (Klik Proceed untuk melanjutkan)"
+        }
+        stage('Deploy'){
+            echo 'Deployment Stage'
+            sh 'mvn jar:jar install:install'
+            sh 'java -jar target/my-app-1.0-SNAPSHOT.jar'
+            sleep(60)
+            echo 'Deployment Selesai'
+        }
     }
 }
