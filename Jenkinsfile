@@ -30,8 +30,18 @@ node {
 EOF
                 '''
             }
+
+            sleep(60)
+            echo 'Deployment Success'
+            echo 'Removing JAR file'
+            withCredentials([sshUserPrivateKey(credentialsId: 'deploy-ec2', keyFileVariable: 'SSH_PRIVATE_KEY')]) {
+                sh '''
+                    ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ubuntu@ec2-13-250-119-151.ap-southeast-1.compute.amazonaws.com << EOF
+                        rm /home/ubuntu/my-app-1.0-SNAPSHOT.jar
+EOF
+                '''
+            }
         }
-        sleep(60)
-        echo 'Deployment Success'
+        
     }
 }
