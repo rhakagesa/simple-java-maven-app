@@ -16,10 +16,23 @@ node {
         }
         stage('Deploy'){
             echo 'Deployment Stage'
-            sh 'mvn jar:jar install:install'
-            sh 'java -jar target/my-app-1.0-SNAPSHOT.jar'
+            sshagent(['deploy-ec2']) {
+                
+                sh '''
+                    echo "Entering EC2"
+                    ssh -o StrictHostKeyChecking=no ubuntu@ec2-13-250-119-151.ap-southeast-1.compute.amazonaws.com << EOF
+                    
+                    echo "Copy jar file to EC2"
+                    scp -o StrictHostKeyChecking=no target/my-app-1.0-SNAPSHOT.jar ubuntu@ec2-13-250-119-151.ap-southeast-1.compute.amazonaws.com:/home/ubuntu
+                    
+                    echo "Run jar file on EC2"
+                    java -jar target/my-app-1.0-SNAPSHOT.jar
+EOF
+                '''                
+            
+            }
             sleep(60)
-            echo 'Deployment Selesai'
+            echo 'Deployment Success'
         }
     }
 }
