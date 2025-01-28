@@ -1,7 +1,9 @@
 node {
     checkout scm
 
-    docker.image('maven:3.9.2').inside('-u root -v ${env.SSH_AUTH_SOCK}:${env.SSH_AUTH_SOCK} -e SSH_AUTH_SOCK=${env.SSH_AUTH_SOCK}') {
+    def sshAuthSock = sh(script: 'echo $SSH_AUTH_SOCK', returnStdout: true).trim()
+
+    docker.image('maven:3.9.2').inside("-u root -v ${sshAuthSock}:${sshAuthSock} -e SSH_AUTH_SOCK=${sshAuthSock}") {
         stage('Build') {
             echo 'Build'
             sh 'mvn -B -DskipTests clean package'
