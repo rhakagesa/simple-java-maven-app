@@ -18,6 +18,9 @@ node {
             echo 'Deployment Stage'
             withCredentials([sshUserPrivateKey(credentialsId: 'deploy-ec2', keyFileVariable: 'SSH_PRIVATE_KEY')]) {
                 sh '''
+                    echo "Install openssh client"
+                    apt-get update && apt-get install -y openssh-client
+
                     echo "Entering EC2"
                     scp -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY target/my-app-1.0-SNAPSHOT.jar ubuntu@ec2-13-250-119-151.ap-southeast-1.compute.amazonaws.com:/home/ubuntu
                     
