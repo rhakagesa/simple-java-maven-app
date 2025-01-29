@@ -12,20 +12,20 @@ node {
         }
         stage('Manual Approval') {
             echo 'Manual Approval'
-            input message: "Melanjutkan eksekusi pipeline ke tahap Deploy? (Klik Proceed untuk melanjutkan)"
+            input message: "Lanjutkan ke tahap Deploy?"
         }
         stage('Deploy') {
             echo 'Deployment Stage'
-            withCredentials([sshUserPrivateKey(credentialsId: 'deploy-ec2', keyFileVariable: 'SSH_PRIVATE_KEY')]) {
+            withCredentials([sshUserPrivateKey(credentialsId: 'deploy-ec2', keyFileVariable: 'SSH_PRIVATE_KEY', usernameVariable: 'SSH_USER', passphraseVariable: 'PUBLIC_DNS')]) {
                 sh '''
                     echo "Install openssh client"
                     apt-get update && apt-get install -y openssh-client
 
                     echo "Entering EC2"
-                    scp -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY target/my-app-1.0-SNAPSHOT.jar ubuntu@ec2-13-250-119-151.ap-southeast-1.compute.amazonaws.com:/home/ubuntu
+                    scp -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY target/my-app-1.0-SNAPSHOT.jar ${SSH_USER}@${PUBLIC_DNS}:/home/ubuntu
                     
                     echo "Run jar file on EC2"
-                    ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ubuntu@ec2-13-250-119-151.ap-southeast-1.compute.amazonaws.com << EOF
+                    ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ${SSH_USER}@${PUBLIC_DNS} << EOF
                         java -jar /home/ubuntu/my-app-1.0-SNAPSHOT.jar
 EOF
                 '''
